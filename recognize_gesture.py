@@ -1,6 +1,5 @@
 import cv2, pickle
 import numpy as np
-import tensorflow as tf
 import sqlite3
 from keras.models import load_model
 
@@ -13,25 +12,6 @@ def get_image_size():
 prediction = None
 model = load_model('cnn_model_keras2.h5')
 image_x, image_y = get_image_size()
-
-
-def tf_process_image(img):
-    img = cv2.resize(img, (image_x, image_y))
-    img = np.array(img, dtype=np.float32)
-    np_array = np.array(img)
-    return np_array
-
-
-def tf_predict(classifier, image):
-    '''
-    need help with prediction using tensorflow
-    '''
-    global prediction
-    processed_array = tf_process_image(image)
-    pred_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": processed_array}, shuffle=False)
-    pred = classifier.predict(input_fn=pred_input_fn)
-    prediction = next(pred)
-    print(prediction)
 
 
 def keras_process_image(img):
@@ -91,9 +71,7 @@ def get_hand_hist():
 
 def recognize():
     global prediction
-    cam = cv2.VideoCapture(1)
-    if cam.read()[0] == False:
-        cam = cv2.VideoCapture(0)
+    cam = cv2.VideoCapture(0)
     hist = get_hand_hist()
     x, y, w, h = 300, 100, 300, 300
     while True:
@@ -101,7 +79,7 @@ def recognize():
         img = cam.read()[1]
         img = cv2.flip(img, 1)
         img = cv2.resize(img, (640, 480))
-        imgCrop = img[y:y + h, x:x + w]
+        # imgCrop = img[y:y + h, x:x + w]
         imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         dst = cv2.calcBackProject([imgHSV], [0, 1], hist, [0, 180, 0, 256], 1)
         disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10, 10))
